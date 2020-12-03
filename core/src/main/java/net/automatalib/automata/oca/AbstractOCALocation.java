@@ -1,5 +1,7 @@
 package net.automatalib.automata.oca;
 
+import java.util.Objects;
+
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import net.automatalib.commons.smartcollections.ArrayStorage;
@@ -18,27 +20,21 @@ import net.automatalib.commons.util.nid.AbstractMutableNumericID;
 public class AbstractOCALocation<T> extends AbstractMutableNumericID {
     private static final long serialVersionUID = 755795684504017747L;
 
-    /**
-     * We have m transition functions.
-     * 
-     * For regular OCAs, DOCAs, and ROCAs, there are only two transition functions.
-     * 
-     * TODO: allow for epsilon transitions
-     */
     protected final ArrayStorage<ArrayStorage<@Nullable T>> transitions;
 
     protected boolean accepting;
 
-    public AbstractOCALocation(final int numberFunctionsOfTransitions, final int initialNumberOfSymbols) {
+    public AbstractOCALocation(final int numberFunctionsOfTransitions, final int initialNumberOfSymbols, final int id) {
         this.transitions = new ArrayStorage<>(numberFunctionsOfTransitions);
         for (int i = 0; i < numberFunctionsOfTransitions; i++) {
             this.transitions.set(i, new ArrayStorage<>(initialNumberOfSymbols));
         }
+        setId(id);
     }
 
-    public AbstractOCALocation(final int numberFunctionsOfTransitions, final int initialNumberOfSymbols,
+    public AbstractOCALocation(final int numberFunctionsOfTransitions, final int initialNumberOfSymbols, final int id,
             boolean accepting) {
-        this(numberFunctionsOfTransitions, initialNumberOfSymbols);
+        this(numberFunctionsOfTransitions, initialNumberOfSymbols, id);
         this.accepting = accepting;
     }
 
@@ -59,7 +55,7 @@ public class AbstractOCALocation<T> extends AbstractMutableNumericID {
         return accepting;
     }
 
-    public void setSuccessors(final int counterValue, final int symbolId, T target) {
+    public void setSuccessors(final int counterValue, final int symbolId, final T target) {
         int m = Math.min(counterValue, transitions.size() - 1);
         transitions.get(m).set(symbolId, target);
     }
@@ -67,5 +63,10 @@ public class AbstractOCALocation<T> extends AbstractMutableNumericID {
     @Override
     public String toString() {
         return "q" + getId();
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getId());
     }
 }

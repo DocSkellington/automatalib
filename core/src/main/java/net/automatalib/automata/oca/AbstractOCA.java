@@ -30,7 +30,7 @@ public abstract class AbstractOCA<L, I> implements OCA<L, I> {
         acceptanceMode = AcceptanceMode.BOTH;
     }
 
-    public AbstractOCA(final Alphabet<I> alphabet, AcceptanceMode acceptanceMode) {
+    public AbstractOCA(final Alphabet<I> alphabet, final AcceptanceMode acceptanceMode) {
         this.alphabet = alphabet;
         locations = new ArrayList<>();
         initialLocations = new HashSet<>();

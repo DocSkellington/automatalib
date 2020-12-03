@@ -87,7 +87,7 @@ public class DefaultVCA<I> extends AbstractVCA<VCALocation, I> {
 
     @Override
     public VCALocation addLocation(boolean accepting) {
-        VCALocation location = new VCALocation(m + 1, alphabet.size(), accepting);
+        VCALocation location = new VCALocation(m + 1, alphabet.size(), locations.size(), accepting);
         locations.add(location);
         return location;
     }

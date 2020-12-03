@@ -64,7 +64,20 @@ public interface DOCA<L, I> extends OCA<L, I>, DeterministicAcceptorTS<State<L>,
     }
 
     @Override
-    default @Nullable State<L> getTransition(State<L> state, I input) {
+    default @Nullable State<L> getSuccessor(final State<L> state, final Iterable<? extends I> input) {
+        Set<State<L>> successors = getSuccessors(Set.of(state), input);
+        if (successors.size() == 0) {
+            return null;
+        }
+
+        Iterator<State<L>> itr = successors.iterator();
+        State<L> successor = itr.next();
+
+        return successor;
+    }
+
+    @Override
+    default @Nullable State<L> getTransition(final State<L> state, final I input) {
         Collection<State<L>> transitions = getTransitions(state, input);
         if (transitions.size() == 0) {
             return null;
@@ -85,7 +98,8 @@ public interface DOCA<L, I> extends OCA<L, I>, DeterministicAcceptorTS<State<L>,
     L getInitialLocation();
 
     @Override
-    public default void addSuccessor(L start, int counterValue, I input, int counterOperation, L target) {
+    public default void addSuccessor(final L start, final int counterValue, final I input, final int counterOperation,
+            final L target) {
         setSuccessor(start, counterValue, input, counterOperation, target);
     }
 
@@ -98,7 +112,8 @@ public interface DOCA<L, I> extends OCA<L, I>, DeterministicAcceptorTS<State<L>,
      * @param counterOperation The counter operation to apply
      * @param target           The target location
      */
-    public void setSuccessor(L start, int counterValue, I input, int counterOperation, L target);
+    public void setSuccessor(final L start, final int counterValue, final I input, final int counterOperation,
+            final L target);
 
     /**
      * Sets the successor of the state
@@ -109,7 +124,7 @@ public interface DOCA<L, I> extends OCA<L, I>, DeterministicAcceptorTS<State<L>,
      * @param counterOperation The counter operation to apply
      * @param target           The target location
      */
-    public default void setSuccessor(State<L> start, I input, int counterOperation, L target) {
+    public default void setSuccessor(final State<L> start, final I input, final int counterOperation, final L target) {
         setSuccessor(start.getLocation(), start.getCounterValue(), input, counterOperation, target);
     }
 }

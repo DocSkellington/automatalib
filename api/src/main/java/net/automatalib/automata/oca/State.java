@@ -1,5 +1,7 @@
 package net.automatalib.automata.oca;
 
+import java.util.Objects;
+
 /**
  * A state stores a location and a counter value.
  * 
@@ -25,4 +27,32 @@ public final class State<L> {
         return counterValue;
     }
     
+    @Override
+    public String toString() {
+        return "(" + loc + ", " + counterValue + ")";
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+
+        if(!(obj instanceof State<?>)) {
+            return false;
+        }
+        final State<?> o = (State<?>)obj;
+        if (counterValue == o.counterValue) {
+            return (o.loc == null && this.loc == null) || (o.loc.equals(loc));
+        }
+        return false;
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(loc, counterValue);
+    }
 }

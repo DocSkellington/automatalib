@@ -1,6 +1,12 @@
 package net.automatalib.automata.oca;
 
+import java.util.HashSet;
 import java.util.Set;
+
+import org.checkerframework.checker.nullness.qual.Nullable;
+import org.checkerframework.checker.units.qual.m;
+
+import net.automatalib.commons.smartcollections.ArrayStorage;
 
 /**
  * Default implementation of location for OCAs.
@@ -16,12 +22,36 @@ import java.util.Set;
 public class OCALocation extends AbstractOCALocation<Set<TransitionTarget<OCALocation>>> {
     private static final long serialVersionUID = 2599828083385204289L;
 
-    public OCALocation(final int initialNumberOfInputs, final boolean accepting) {
-        super(2, initialNumberOfInputs);
+    protected final ArrayStorage<@Nullable Set<TransitionTarget<OCALocation>>> epsilonTransitions;
+
+    public OCALocation(final int initialNumberOfInputs, final int id, final boolean accepting) {
+        super(2, initialNumberOfInputs, id, accepting);
+        this.epsilonTransitions = new ArrayStorage<>(2, HashSet::new);
+        // We create empty sets for the transitions
+        for (int i = 0 ; i < 2 ; i++) {
+            for (int j = 0 ; j < initialNumberOfInputs ; j++) {
+                this.transitions.get(i).set(j, new HashSet<>());
+            }
+        }
     }
 
-    public void addSuccessor(final int counterValue, final int symbolId, TransitionTarget<OCALocation> target) {
+    public void addSuccessor(final int counterValue, final int symbolId, final TransitionTarget<OCALocation> target) {
         final int m = Math.min(counterValue, transitions.size() - 1);
         transitions.get(m).get(symbolId).add(target);
+    }
+
+    public void setEpsilonSuccessors(final int counterValue, final Set<TransitionTarget<OCALocation>> successors) {
+        final int m = Math.min(counterValue, epsilonTransitions.size() - 1);
+        epsilonTransitions.set(m, successors);
+    }
+
+    public void addEpsilonSuccessor(final int counterValue, final TransitionTarget<OCALocation> successor) {
+        final int m = Math.min(counterValue, epsilonTransitions.size() - 1);
+        epsilonTransitions.get(m).add(successor);
+    }
+
+    public @Nullable Set<TransitionTarget<OCALocation>> getEpsilonSuccessors(final int counterValue) {
+        final int m = Math.min(counterValue, epsilonTransitions.size() - 1);
+        return epsilonTransitions.get(m);
     }
 }

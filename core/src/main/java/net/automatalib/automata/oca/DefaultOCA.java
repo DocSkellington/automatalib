@@ -1,6 +1,5 @@
 package net.automatalib.automata.oca;
 
-import java.security.InvalidParameterException;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
@@ -48,19 +47,32 @@ public class DefaultOCA<I> extends AbstractOCA<OCALocation, I> {
     }
 
     @Override
+    public Collection<State<OCALocation>> getEpsilonTransitions(State<OCALocation> state) {
+        final Collection<TransitionTarget<OCALocation>> transitions = state.getLocation().getEpsilonSuccessors(state.getCounterValue());
+        Set<State<OCALocation>> states = new HashSet<>();
+        for (TransitionTarget<OCALocation> transition : transitions) {
+            final int newCounterValue = state.getCounterValue() + transition.counterOperation;
+            if (newCounterValue >= 0) {
+                states.add(new State<OCALocation>(transition.targetLocation, newCounterValue));
+            }
+        }
+        return states;
+    }
+
+    @Override
     public OCALocation addLocation(boolean accepting) {
-        OCALocation location = new OCALocation(alphabet.size(), accepting);
+        OCALocation location = new OCALocation(alphabet.size(), locations.size(), accepting);
         locations.add(location);
         return location;
     }
 
     @Override
     public void addSuccessor(OCALocation start, int counterValue, I input, int counterOperation, OCALocation target) {
-        if (counterValue + counterOperation < 0) {
-            throw new InvalidParameterException("The counter value of an OCA must always stay at least 0");
-        }
         start.addSuccessor(counterValue, alphabet.getSymbolIndex(input),
                 new TransitionTarget<OCALocation>(target, counterOperation));
     }
 
+    public void addEpsilonSuccessor(OCALocation start, int counterValue, int counterOperation, OCALocation target) {
+        start.addEpsilonSuccessor(counterValue, new TransitionTarget<OCALocation>(target, counterOperation));
+    }
 }

@@ -1,6 +1,8 @@
 package net.automatalib.automata.oca;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -32,6 +34,10 @@ import net.automatalib.ts.acceptors.AcceptorTS;
  * +1. OCAs allow epsilon-transitions.
  * <p>
  * The set of initial states is the set {(q, 0) : q is an initial location}.
+ * <p>
+ * Important: if the OCA has a loop that increases the counter and with only
+ * epsilon-transitions, then checking whether a word is accepted will infinitely
+ * run.
  * 
  * @param <L> Location type
  * @param <I> Input alphabet type
@@ -45,7 +51,7 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @param id The ID of the location
      * @return The corresponding location
      */
-    L getLocation(int id);
+    L getLocation(final int id);
 
     /**
      * Returns the ID of the given location
@@ -53,21 +59,92 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @param id The location
      * @return The corresponding ID
      */
-    int getLocationId(L loc);
+    int getLocationId(final L loc);
 
     @Override
-    default Boolean computeOutput(Iterable<? extends I> input) {
+    default Boolean computeOutput(final Iterable<? extends I> input) {
         return accepts(input);
     }
 
     @Override
-    default Boolean computeSuffixOutput(Iterable<? extends I> prefix, Iterable<? extends I> suffix) {
+    default Boolean computeSuffixOutput(final Iterable<? extends I> prefix, final Iterable<? extends I> suffix) {
         Set<State<L>> states = getStates(Iterables.concat(prefix, suffix));
         return isAccepting(states);
     }
 
     @Override
-    default boolean isAccepting(State<L> state) {
+    default Set<State<L>> getSuccessors(final Collection<? extends State<L>> states,
+            final Iterable<? extends I> input) {
+        Set<State<L>> current = new HashSet<State<L>>(states);
+        Set<State<L>> successors = new HashSet<>();
+
+        for (I sym : input) {
+            // We follow sym-transitions, as usual
+            Set<State<L>> newSuccessors = new HashSet<>();
+            for (State<L> state : current) {
+                Set<State<L>> succ = getSuccessors(state, sym);
+                newSuccessors.addAll(succ);
+                successors.addAll(succ);
+            }
+
+            // We follow as much epsilon-transitions as possible
+            // Warning: this may loop infinitely if there is an epsilon-loop that modifies
+            // the counter value
+            // However, we can not prevent this for OCAs
+            boolean change = true;
+            while (change) {
+                for (State<L> state : successors) {
+                    Set<State<L>> epsSucc = getEpsilonSuccessors(state);
+                    if (epsSucc != null) {
+                        newSuccessors.addAll(epsSucc);
+                    }
+                }
+
+                change = successors.addAll(newSuccessors);
+                newSuccessors.clear();
+            }
+
+            // We update the current set of states
+            Set<State<L>> tmp = current;
+            current = successors;
+            successors = tmp;
+            successors.clear();
+        }
+
+        return current;
+    }
+
+    /**
+     * Gets the epsilon-successors of a state.
+     * 
+     * @param state The starting state
+     * @return The set of target states
+     */
+    default Set<State<L>> getEpsilonSuccessors(final State<L> state) {
+        Collection<State<L>> transitions = getEpsilonTransitions(state);
+        if (transitions.size() == 0) {
+            return Collections.emptySet();
+        }
+
+        Set<State<L>> result = new HashSet<>(transitions.size());
+        for (State<L> transition : transitions) {
+            result.add(getSuccessor(transition));
+        }
+        return result;
+    }
+
+    /**
+     * Gets the epsilon-transitions from a given state.
+     * 
+     * That is, these are the transitions that do not consume any input symbols
+     * 
+     * @param state The starting state
+     * @return A collection of transitions
+     */
+    Collection<State<L>> getEpsilonTransitions(final State<L> state);
+
+    @Override
+    default boolean isAccepting(final State<L> state) {
         final L location = state.getLocation();
         final int cv = state.getCounterValue();
         switch (getAcceptanceMode()) {
@@ -83,7 +160,7 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
     }
 
     @Override
-    default boolean isAccepting(Collection<? extends State<L>> states) {
+    default boolean isAccepting(final Collection<? extends State<L>> states) {
         for (State<L> state : states) {
             if (isAccepting(state)) {
                 return true;
@@ -98,7 +175,7 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @param loc The location
      * @return Whether the given location is accepting
      */
-    boolean isAcceptingLocation(L loc);
+    boolean isAcceptingLocation(final L loc);
 
     @Override
     default Set<State<L>> getInitialStates() {
@@ -118,7 +195,7 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @param accepting Whether the new location is accepting
      * @return The new location
      */
-    public L addLocation(boolean accepting);
+    public L addLocation(final boolean accepting);
 
     /**
      * Creates a new initial location and adds it in the OCA.
@@ -126,7 +203,7 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @param accepting Whether the new location is accepting
      * @return The new location
      */
-    public L addInitialLocation(boolean accepting);
+    public L addInitialLocation(final boolean accepting);
 
     /**
      * Adds a successor to the state (start, counterValue) when reading input. The
@@ -138,7 +215,8 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @param counterOperation The counter operation
      * @param target           The target location
      */
-    public void addSuccessor(L start, int counterValue, I input, int counterOperation, L target);
+    public void addSuccessor(final L start, final int counterValue, final I input, final int counterOperation,
+            final L target);
 
     /**
      * Adds a successor to the state start when reading input. The successor is a
@@ -149,7 +227,7 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @param counterOperation The counter operation
      * @param target           The target location
      */
-    public default void addSuccessor(State<L> start, I input, int counterOperation, L target) {
+    public default void addSuccessor(final State<L> start, final I input, final int counterOperation, final L target) {
         addSuccessor(start.getLocation(), start.getCounterValue(), input, counterOperation, target);
     }
 
