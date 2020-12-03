@@ -7,6 +7,9 @@ import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 import net.automatalib.words.impl.Alphabets;
 
+/**
+ * @author Gaëtan Staquet
+ */
 public class DOCATests {
     private DefaultDOCA<Character> buildDOCA(AcceptanceMode mode) {
         // If mode == ACCEPTING_LOCATION:

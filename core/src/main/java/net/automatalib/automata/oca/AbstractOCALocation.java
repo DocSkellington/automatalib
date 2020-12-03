@@ -24,17 +24,13 @@ public class AbstractOCALocation<T> extends AbstractMutableNumericID {
 
     protected boolean accepting;
 
-    public AbstractOCALocation(final int numberFunctionsOfTransitions, final int initialNumberOfSymbols, final int id) {
+    public AbstractOCALocation(final int numberFunctionsOfTransitions, final int initialNumberOfSymbols, final int id,
+            boolean accepting) {
         this.transitions = new ArrayStorage<>(numberFunctionsOfTransitions);
         for (int i = 0; i < numberFunctionsOfTransitions; i++) {
             this.transitions.set(i, new ArrayStorage<>(initialNumberOfSymbols));
         }
         setId(id);
-    }
-
-    public AbstractOCALocation(final int numberFunctionsOfTransitions, final int initialNumberOfSymbols, final int id,
-            boolean accepting) {
-        this(numberFunctionsOfTransitions, initialNumberOfSymbols, id);
         this.accepting = accepting;
     }
 

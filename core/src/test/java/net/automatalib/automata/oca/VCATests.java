@@ -17,7 +17,7 @@ public class VCATests {
     private DefaultVCA<Character> buildVCA(AcceptanceMode mode) {
         // If mode == BOTH:
         // L = {a^n c b^n c | n > 1} U {a^n c b^n | n > 1}
-        // If mode == FINAL_STATE:
+        // If mode == ACCEPTING_LOCATION:
         // L = {a^n c b^m | n > 1 and 0 <= m <= n} U {a^n c b^n | n > 1}
         // If mode == COUNTER_ZERO:
         // L = {epsilon} U {a^n c b^n c | n > 1} U {a^n c b^n | n > 1}
