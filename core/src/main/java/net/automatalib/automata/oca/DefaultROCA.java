@@ -61,4 +61,8 @@ public class DefaultROCA<I> extends AbstractROCA<ROCALocation, I> {
         return SimpleDTS.stateToSet(new State<ROCALocation>(transition.targetLocation, counterValue));
     }
 
+    @Override
+    public int getNumberOfTransitionFunctions() {
+        return ROCALocation.NUMBER_OF_TRANSITION_FUNCTIONS;
+    }
 }

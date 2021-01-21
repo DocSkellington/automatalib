@@ -22,13 +22,15 @@ import net.automatalib.commons.smartcollections.ArrayStorage;
 public class OCALocation extends AbstractOCALocation<Set<TransitionTarget<OCALocation>>> {
     private static final long serialVersionUID = 2599828083385204289L;
 
+    public static final int NUMBER_OF_TRANSITION_FUNCTIONS = 2;
+
     protected final ArrayStorage<@Nullable Set<TransitionTarget<OCALocation>>> epsilonTransitions;
 
     public OCALocation(final int initialNumberOfInputs, final int id, final boolean accepting) {
         super(2, initialNumberOfInputs, id, accepting);
-        this.epsilonTransitions = new ArrayStorage<>(2, HashSet::new);
+        this.epsilonTransitions = new ArrayStorage<>(NUMBER_OF_TRANSITION_FUNCTIONS, HashSet::new);
         // We create empty sets for the transitions
-        for (int i = 0 ; i < 2 ; i++) {
+        for (int i = 0 ; i < NUMBER_OF_TRANSITION_FUNCTIONS ; i++) {
             for (int j = 0 ; j < initialNumberOfInputs ; j++) {
                 this.transitions.get(i).set(j, new HashSet<>());
             }

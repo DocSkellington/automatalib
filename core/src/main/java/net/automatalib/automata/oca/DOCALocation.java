@@ -20,11 +20,13 @@ import net.automatalib.commons.smartcollections.ArrayStorage;
 public class DOCALocation extends AbstractOCALocation<TransitionTarget<DOCALocation>> {
     private static final long serialVersionUID = -7008076153791350517L;
 
+    public static final int NUMBER_OF_TRANSITION_FUNCTIONS = 2;
+
     protected final ArrayStorage<@Nullable TransitionTarget<DOCALocation>> epsilonTransitions;
 
     public DOCALocation(final int initialNumberOfInputs, final int id, final boolean accepting) {
-        super(2, initialNumberOfInputs, id, accepting);
-        this.epsilonTransitions = new ArrayStorage<>(2);
+        super(NUMBER_OF_TRANSITION_FUNCTIONS, initialNumberOfInputs, id, accepting);
+        this.epsilonTransitions = new ArrayStorage<>(NUMBER_OF_TRANSITION_FUNCTIONS);
     }
 
     TransitionTarget<DOCALocation> getSuccessor(final int symbolId, final int counterValue) {

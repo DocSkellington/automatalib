@@ -91,4 +91,9 @@ public class DefaultVCA<I> extends AbstractVCA<VCALocation, I> {
         locations.add(location);
         return location;
     }
+
+    @Override
+    public int getNumberOfTransitionFunctions() {
+        return m;
+    }
 }

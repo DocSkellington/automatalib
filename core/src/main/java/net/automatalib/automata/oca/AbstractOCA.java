@@ -1,10 +1,17 @@
 package net.automatalib.automata.oca;
 
 import java.util.ArrayList;
-import java.util.HashSet;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.HashSet;
 import java.util.Set;
 
+import net.automatalib.graphs.Graph;
+import net.automatalib.visualization.DefaultVisualizationHelper;
+import net.automatalib.visualization.VisualizationHelper;
 import net.automatalib.words.Alphabet;
 
 /**
@@ -15,7 +22,7 @@ import net.automatalib.words.Alphabet;
  * 
  * @author Gaëtan Staquet
  */
-public abstract class AbstractOCA<L, I> implements OCA<L, I> {
+public abstract class AbstractOCA<L, I> implements OCA<L, I>, Graph<L, AbstractOCA.OCAViewEdge<L, I>>  {
     protected final AcceptanceMode acceptanceMode;
 
     protected final Alphabet<I> alphabet;
@@ -70,5 +77,101 @@ public abstract class AbstractOCA<L, I> implements OCA<L, I> {
     @Override
     public AcceptanceMode getAcceptanceMode() {
         return acceptanceMode;
+    }
+
+    @Override
+    public Collection<L> getNodes() {
+        return Collections.unmodifiableCollection(getLocations());
+    }
+
+    @Override
+    public L getTarget(OCAViewEdge<L, I> edge) {
+        return edge.target;
+    }
+
+    @Override
+    public Collection<OCAViewEdge<L, I>> getOutgoingEdges(final L location) {
+        final List<OCAViewEdge<L, I>> edges = new ArrayList<>();
+
+        for (final I a : getAlphabet()) {
+            for (int i = 0 ; i < getNumberOfTransitionFunctions() ; i++) {
+                State<L> state = new State<>(location, i);
+                Set<State<L>> targets = getSuccessors(state, a);
+                for (State<L> target : targets) {
+                    int counterOperation = 0;
+                    L targetLocation = null;
+                    if (target != null) {
+                        counterOperation = target.getCounterValue() - i;
+                        targetLocation = target.getLocation();
+                    }
+                    OCAViewEdge<L, I> edge = new OCAViewEdge<>(a, i, counterOperation, targetLocation);
+                    edges.add(edge);
+                }
+            }
+        }
+
+        return edges;
+    }
+
+    @Override
+    public VisualizationHelper<L, OCAViewEdge<L, I>> getVisualizationHelper() {
+        return new DefaultVisualizationHelper<L, OCAViewEdge<L, I>>() {
+            @Override
+            protected Collection<L> initialNodes() {
+                return getInitialLocations();
+            }
+
+            @Override
+            public boolean getNodeProperties(L node, Map<String, String> properties) {
+                super.getNodeProperties(node, properties);
+
+                properties.put(NodeAttrs.SHAPE, isAcceptingLocation(node) ? NodeShapes.DOUBLECIRCLE : NodeShapes.CIRCLE);
+                properties.put(NodeAttrs.LABEL, "L" + getLocationId(node));
+
+                return true;
+            }
+
+            @Override
+            public boolean getEdgeProperties(L src, OCAViewEdge<L, I> edge, L tgt, Map<String, String> properties) {
+                final I input = edge.input;
+                final int counterValue = edge.counterValue;
+                final int counterOperation = edge.counterOperation;
+
+                String guard;
+                if (counterValue >= getNumberOfTransitionFunctions() - 1) {
+                    guard = ">=" + (getNumberOfTransitionFunctions() - 1);
+                }
+                else {
+                    guard = "=" + counterValue;
+                }
+                properties.put(EdgeAttrs.LABEL, input + ", " + guard + ", " + counterOperation);
+
+                if (counterValue == 0) {
+                    properties.put(EdgeAttrs.COLOR, "blue");
+                }
+                else if (counterValue == 1) {
+                    properties.put(EdgeAttrs.COLOR, "green");
+                }
+                else if (counterValue == 2) {
+                    properties.put(EdgeAttrs.COLOR, "red");
+                }
+
+                return true;
+            }
+        };
+    }
+
+    static class OCAViewEdge<S, I> {
+        final I input;
+        final int counterValue;
+        final int counterOperation;
+        final S target;
+
+        OCAViewEdge(I input, int counterValue, int counterOperation, S target) {
+            this.input = input;
+            this.counterValue = counterValue;
+            this.counterOperation = counterOperation;
+            this.target = target;
+        }
     }
 }

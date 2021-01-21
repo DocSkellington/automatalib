@@ -18,11 +18,11 @@ import net.automatalib.words.Alphabet;
  */
 public class DefaultOCA<I> extends AbstractOCA<OCALocation, I> {
 
-    DefaultOCA(final Alphabet<I> alphabet) {
+    public DefaultOCA(final Alphabet<I> alphabet) {
         super(alphabet);
     }
 
-    DefaultOCA(final Alphabet<I> alphabet, AcceptanceMode acceptanceMode) {
+    public DefaultOCA(final Alphabet<I> alphabet, AcceptanceMode acceptanceMode) {
         super(alphabet, acceptanceMode);
     }
 
@@ -74,5 +74,10 @@ public class DefaultOCA<I> extends AbstractOCA<OCALocation, I> {
 
     public void addEpsilonSuccessor(OCALocation start, int counterValue, int counterOperation, OCALocation target) {
         start.addEpsilonSuccessor(counterValue, new TransitionTarget<OCALocation>(target, counterOperation));
+    }
+
+    @Override
+    public int getNumberOfTransitionFunctions() {
+        return OCALocation.NUMBER_OF_TRANSITION_FUNCTIONS;
     }
 }

@@ -77,4 +77,9 @@ public class DefaultDOCA<I> extends AbstractDOCA<DOCALocation, I> {
     public void setEpsilonSuccessor(DOCALocation start, int counterValue, int counterOperation, DOCALocation target) {
         start.setEpsilonSuccessor(counterValue, new TransitionTarget<DOCALocation>(target, counterOperation));
     }
+
+    @Override
+    public int getNumberOfTransitionFunctions() {
+        return DOCALocation.NUMBER_OF_TRANSITION_FUNCTIONS;
+    }
 }

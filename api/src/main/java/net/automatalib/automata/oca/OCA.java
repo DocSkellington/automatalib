@@ -237,4 +237,11 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @return The acceptance mode
      */
     public AcceptanceMode getAcceptanceMode();
+
+    /**
+     * Gives the number of transition functions used by this OCA.
+     * 
+     * @return The number of transition functions
+     */
+    public int getNumberOfTransitionFunctions();
 }
