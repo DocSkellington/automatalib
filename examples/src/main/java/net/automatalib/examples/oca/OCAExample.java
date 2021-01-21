@@ -1,7 +1,5 @@
 package net.automatalib.examples.oca;
 
-import javax.naming.spi.DirStateFactory.Result;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,6 +13,11 @@ import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 import net.automatalib.words.impl.Alphabets;
 
+/**
+ * Shows how to construct, check acceptance of a word, and visualize an OCA and a ROCA.
+ * 
+ * @author Gaëtan Staquet
+ */
 public final class OCAExample {
     private static final Logger LOGGER = LoggerFactory.getLogger(OCAExample.class);
     private static final Alphabet<Character> ALPHABET = Alphabets.characters('a', 'b');
