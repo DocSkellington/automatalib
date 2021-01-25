@@ -3,6 +3,7 @@ package net.automatalib.automata.oca;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -10,6 +11,7 @@ import com.google.common.collect.Iterables;
 
 import net.automatalib.automata.concepts.SuffixOutput;
 import net.automatalib.ts.acceptors.AcceptorTS;
+import net.automatalib.words.Alphabet;
 
 /**
  * Interface for the OCA (one-counter automaton), a finite-state automaton
@@ -145,6 +147,9 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
 
     @Override
     default boolean isAccepting(final State<L> state) {
+        if (state == null) {
+            return false;
+        }
         final L location = state.getLocation();
         final int cv = state.getCounterValue();
         switch (getAcceptanceMode()) {
@@ -244,4 +249,15 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
      * @return The number of transition functions
      */
     public int getNumberOfTransitionFunctions();
+
+    /**
+     * Gives the number of locations in the OCA.
+     * 
+     * @return The number of locations
+     */
+    public int size();
+
+    public List<L> getLocations();
+
+    public Alphabet<I> getAlphabet();
 }

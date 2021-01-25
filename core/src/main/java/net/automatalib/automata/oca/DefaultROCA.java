@@ -49,6 +49,9 @@ public class DefaultROCA<I> extends AbstractROCA<ROCALocation, I> {
     @Override
     public Collection<State<ROCALocation>> getTransitions(State<ROCALocation> state, I input) {
         final int symbolId = getAlphabet().getSymbolIndex(input);
+        if (state == null || state.getLocation() == null) {
+            return Collections.emptySet();
+        }
         final TransitionTarget<ROCALocation> transition = state.getLocation().getSuccessor(symbolId,
                 state.getCounterValue());
         if (transition == null) {

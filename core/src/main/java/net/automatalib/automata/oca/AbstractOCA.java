@@ -44,6 +44,7 @@ public abstract class AbstractOCA<L, I> implements OCA<L, I>, Graph<L, AbstractO
         this.acceptanceMode = acceptanceMode;
     }
 
+    @Override
     public Alphabet<I> getAlphabet() {
         return alphabet;
     }
@@ -60,11 +61,12 @@ public abstract class AbstractOCA<L, I> implements OCA<L, I>, Graph<L, AbstractO
 
     @Override
     public Set<L> getInitialLocations() {
-        return initialLocations;
+        return Collections.unmodifiableSet(initialLocations);
     }
 
+    @Override
     public List<L> getLocations() {
-        return locations;
+        return Collections.unmodifiableList(locations);
     }
 
     @Override
@@ -173,5 +175,10 @@ public abstract class AbstractOCA<L, I> implements OCA<L, I>, Graph<L, AbstractO
             this.counterOperation = counterOperation;
             this.target = target;
         }
+    }
+
+    @Override
+    public int size() {
+        return locations.size();
     }
 }
