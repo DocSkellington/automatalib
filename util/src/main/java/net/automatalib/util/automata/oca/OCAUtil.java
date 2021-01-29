@@ -1,15 +1,24 @@
 package net.automatalib.util.automata.oca;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Queue;
 import java.util.Set;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import net.automatalib.automata.oca.DFAWithCounterValues;
+import net.automatalib.automata.oca.DFAWithCounterValuesState;
+import net.automatalib.automata.oca.DefaultROCA;
+import net.automatalib.automata.oca.DefaultVCA;
 import net.automatalib.automata.oca.ROCA;
 import net.automatalib.automata.oca.State;
+import net.automatalib.automata.oca.VCALocation;
+import net.automatalib.commons.util.Pair;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 
@@ -140,5 +149,90 @@ public class OCAUtil {
      */
     public static <I> boolean testEquivalence(final ROCA<?, I> roca1, final ROCA<?, I> roca2, final Alphabet<I> alphabet) {
         return findSeparatingWord(roca1, roca2, alphabet) == null;
+    }
+
+    public static <I> DFAWithCounterValues<I> constructRestrictedAutomaton(final DefaultVCA<I> vca, int maxCounterValue) {
+        DFAWithCounterValues<I> dfa = new DFAWithCounterValues<>(vca.getAlphabet());
+        Map<State<VCALocation>, DFAWithCounterValuesState> to_dfa_state = new HashMap<>();
+        Queue<State<VCALocation>> queue = new LinkedList<>();
+        queue.add(new State<>(vca.getInitialLocation(), 0));
+
+        DFAWithCounterValuesState newState = dfa.addInitialState(vca.isAcceptingLocation(vca.getInitialLocation()), 0);
+        to_dfa_state.put(new State<>(vca.getInitialLocation(), 0), newState);
+
+        while (queue.size() != 0) {
+            State<VCALocation> start = queue.poll();
+
+            for (I a : vca.getAlphabet()) {
+                State<VCALocation> target = vca.getTransition(start, a);
+                if (target != null && target.getCounterValue() <= maxCounterValue) {
+                    if (!to_dfa_state.containsKey(target)) {
+                        VCALocation location = target.getLocation();
+                        int counterValue = target.getCounterValue();
+                        newState = dfa.addState(vca.isAccepting(target), counterValue);
+                        to_dfa_state.put(new State<>(location, counterValue), newState);
+
+                        queue.add(target);
+                    }
+                    DFAWithCounterValuesState start_in_dfa = to_dfa_state.get(start);
+                    DFAWithCounterValuesState target_in_dfa = to_dfa_state.get(target);
+                    dfa.setTransition(start_in_dfa, a, target_in_dfa);
+
+                }
+            }
+        }
+
+        return dfa;
+    }
+
+    /**
+     * Constructs a DFA with states annotated with counter values, up to the given maximal counter value.
+     * 
+     * @param <I> Input alphabet type
+     * @param roca The ROCA
+     * @param maxCounterValue The maximum counter value
+     * @return A DFA where the states are annotated with counter values.
+     */
+    public static <I> DFAWithCounterValues<I> constructRestrictedAutomaton(final DefaultROCA<I> roca, int maxCounterValue) {
+        // We construct a VCA from this ROCA
+        // We naturally need to transform the alphabet I into Pair<I, Integer>
+        DefaultVCA<Pair<I, Integer>> vca = roca.toVCA();
+        // We construct the behavior graph of the VCA, up to a counter value
+        DFAWithCounterValues<Pair<I, Integer>> bg_b = constructRestrictedAutomaton(vca, maxCounterValue);
+
+        // Finally, we construct a DFA from bg_bg by re-transforming the alphabet into I
+        // We will obtain a DFA that is easy-to-learn as each state is annotated with a counter value
+        DFAWithCounterValues<I> automaton = new DFAWithCounterValues<>(roca.getAlphabet());
+
+        Map<DFAWithCounterValuesState, DFAWithCounterValuesState> bg_b_to_automaton_states = new HashMap<>();
+        Queue<DFAWithCounterValuesState> queue = new LinkedList<>();
+        queue.add(bg_b.getInitialState());
+        
+        DFAWithCounterValuesState initialInBG = bg_b.getInitialState();
+        DFAWithCounterValuesState initialInAutomaton = automaton.addInitialState(bg_b.isAccepting(initialInBG), bg_b.getCounterValue(initialInBG));
+        bg_b_to_automaton_states.put(initialInBG, initialInAutomaton);
+
+        while (queue.size() != 0) {
+            DFAWithCounterValuesState start = queue.poll();
+
+            for (Pair<I, Integer> a : bg_b.getInputAlphabet()) {
+                DFAWithCounterValuesState target = bg_b.getTransition(start, a);
+                if (target != null) {
+                    if (!bg_b_to_automaton_states.containsKey(target)) {
+                        int counterValue = target.getCounterValue();
+                        DFAWithCounterValuesState newState = automaton.addState(bg_b.isAccepting(target), counterValue);
+                        bg_b_to_automaton_states.put(target, newState);
+
+                        queue.add(target);
+                    }
+                    DFAWithCounterValuesState start_in_dfa = bg_b_to_automaton_states.get(start);
+                    DFAWithCounterValuesState target_in_dfa = bg_b_to_automaton_states.get(target);
+                    I symbol = a.getFirst();
+                    automaton.setTransition(start_in_dfa, symbol, target_in_dfa);
+                }
+            }
+        }
+
+        return automaton;
     }
 }
