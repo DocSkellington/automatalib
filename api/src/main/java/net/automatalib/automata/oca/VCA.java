@@ -18,6 +18,15 @@ package net.automatalib.automata.oca;
 public interface VCA<L, I> extends ROCA<L, I> {
 
     @Override
+    default void setSuccessor(State<L> start, I input, int counterOperation, L target) {
+        setSuccessor(start.getLocation(), start.getCounterValue(), input, target);
+    }
+
+    default void setSuccessor(State<L> start, I input, L target) {
+        setSuccessor(start.getLocation(), start.getCounterValue(), input, target);
+    }
+
+    @Override
     default void setSuccessor(L start, int counterValue, I input, int counterOperation, L target) {
         setSuccessor(start, counterValue, input, target);
     }
