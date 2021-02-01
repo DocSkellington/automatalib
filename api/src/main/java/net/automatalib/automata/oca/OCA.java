@@ -29,11 +29,11 @@ import net.automatalib.words.Alphabet;
  * can not be distinguished. Typically, one can test if the counter value is
  * equal to zero or strictly greater than zero.
  * <p>
- * Transitions are in (Q x N) x S x (Q x N), with Q the set of states, N the
- * natural set, and S the alphabet. The first (Q x N) designates the starting
- * state, while the second designates the target location and the counter
- * operation to be applied. Usually, allowed counter operations are -1, 0, and
- * +1. OCAs allow epsilon-transitions.
+ * Transitions are in (Q x N) x (S U {epsilon}) x (Q x N), with Q the set of
+ * states, N the natural set, and S the alphabet. The first (Q x N) designates
+ * the starting state, while the second designates the target location and the
+ * counter operation to be applied. Usually, allowed counter operations are -1,
+ * 0, and +1. OCAs allow epsilon-transitions.
  * <p>
  * The set of initial states is the set {(q, 0) : q is an initial location}.
  * <p>

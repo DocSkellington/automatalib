@@ -161,10 +161,11 @@ public class OCAUtil {
     }
 
     /**
-     * Constructs an automaton where states are annotated with a counter value, up to the given maximal counter value.
+     * Constructs an automaton where states are annotated with a counter value, up
+     * to the given maximal counter value.
      * 
-     * @param <I> Input alphabet type
-     * @param vca The VCA
+     * @param <I>             Input alphabet type
+     * @param vca             The VCA
      * @param maxCounterValue The maximal counter value.
      * @return An automaton with counter values.
      */

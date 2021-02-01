@@ -1,7 +1,5 @@
 package net.automatalib.automata.oca;
 
-import java.util.Set;
-
 import net.automatalib.words.VPDAlphabet;
 
 /**
