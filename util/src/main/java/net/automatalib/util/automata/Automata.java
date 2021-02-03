@@ -26,6 +26,7 @@ import net.automatalib.automata.MutableDeterministic;
 import net.automatalib.automata.UniversalAutomaton;
 import net.automatalib.automata.UniversalDeterministicAutomaton;
 import net.automatalib.automata.graphs.TransitionEdge;
+import net.automatalib.automata.oca.ROCA;
 import net.automatalib.automata.vpda.OneSEVPA;
 import net.automatalib.commons.util.collections.CollectionsUtil;
 import net.automatalib.graphs.Graph;
@@ -34,12 +35,14 @@ import net.automatalib.util.automata.cover.Covers;
 import net.automatalib.util.automata.equivalence.CharacterizingSets;
 import net.automatalib.util.automata.equivalence.DeterministicEquivalenceTest;
 import net.automatalib.util.automata.equivalence.NearLinearEquivalenceTest;
+import net.automatalib.util.automata.oca.OCAUtil;
 import net.automatalib.util.automata.vpda.OneSEVPAUtil;
 import net.automatalib.util.minimizer.Block;
 import net.automatalib.util.minimizer.BlockMap;
 import net.automatalib.util.minimizer.MinimizationResult;
 import net.automatalib.util.minimizer.Minimizer;
 import net.automatalib.util.ts.TS;
+import net.automatalib.words.Alphabet;
 import net.automatalib.words.VPDAlphabet;
 import net.automatalib.words.Word;
 import org.checkerframework.checker.nullness.qual.Nullable;
@@ -191,6 +194,10 @@ public class Automata extends TS {
         return OneSEVPAUtil.testEquivalence(sevpa1, sevpa2, inputs);
     }
 
+    public static <I> boolean testEquivalence(final ROCA<?, I> roca1, final ROCA<?, I> roca2, final Alphabet<I> inputs) {
+        return OCAUtil.testEquivalence(roca1, roca2, inputs);
+    }
+
     /**
      * Finds a separating word for two automata. A separating word is a word that exposes a difference (differing state
      * or transition properties, or a transition undefined in only one of the automata) between the two automata.
@@ -243,6 +250,10 @@ public class Automata extends TS {
                                                            final OneSEVPA<?, I> sevpa2,
                                                            final VPDAlphabet<I> inputs) {
         return OneSEVPAUtil.findSeparatingWord(sevpa1, sevpa2, inputs);
+    }
+
+    public static <I> @Nullable Word<I> findSeparatingWord(final ROCA<?, I> roca1, final ROCA<?, I> roca2, final Alphabet<I> inputs) {
+        return OCAUtil.findSeparatingWord(roca1, roca2, inputs);
     }
 
     /**
