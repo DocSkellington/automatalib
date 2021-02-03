@@ -1,12 +1,8 @@
 package net.automatalib.automata.oca;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import net.automatalib.commons.util.Pair;
 import net.automatalib.words.Alphabet;
 import net.automatalib.words.Word;
 import net.automatalib.words.impl.Alphabets;
@@ -88,39 +84,5 @@ public class ROCATests {
         Assert.assertFalse(roca.accepts(Word.fromCharSequence("aab")));
         Assert.assertFalse(roca.accepts(Word.fromCharSequence("aaba")));
         Assert.assertFalse(roca.accepts(Word.fromCharSequence("abab")));
-    }
-
-    @Test
-    public void toVCAConstruction() {
-        DefaultROCA<Character> roca = buildROCA(AcceptanceMode.BOTH);
-
-        DefaultVCA<Pair<Character, Integer>> vca = roca.toVCA();
-
-        List<Pair<Character, Integer>> word = new LinkedList<>();
-        Assert.assertFalse(vca.accepts(word));
-
-        word.add(Pair.of('a', +1));
-        word.add(Pair.of('b', -1));
-        word.add(Pair.of('a', 0));
-        Assert.assertTrue(vca.accepts(word));
-
-        word.clear();
-        word.add(Pair.of('a', +1));
-        word.add(Pair.of('a', +1));
-        word.add(Pair.of('a', +1));
-        word.add(Pair.of('b', -1));
-        word.add(Pair.of('b', -1));
-        word.add(Pair.of('a', 0));
-        word.add(Pair.of('b', -1));
-        Assert.assertTrue(vca.accepts(word));
-
-        word.clear();
-        word.add(Pair.of('a', +1));
-        word.add(Pair.of('a', +1));
-        word.add(Pair.of('a', +1));
-        word.add(Pair.of('a', +1));
-        word.add(Pair.of('b', -1));
-        word.add(Pair.of('a', 0));
-        Assert.assertFalse(vca.accepts(word));
     }
 }

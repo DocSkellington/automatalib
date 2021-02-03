@@ -10,7 +10,7 @@ import net.automatalib.words.VPDAlphabet;
  * 
  * @author Gaëtan Staquet
  */
-public abstract class AbstractVCA<L, I> extends AbstractDOCA<L, I> implements VCA<L, I> {
+public abstract class AbstractVCA<L, I> extends AbstractROCA<L, I> implements VCA<L, I> {
     protected final int m;
     protected final VPDAlphabet<I> alphabet;
 

@@ -8,10 +8,10 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
-import net.automatalib.automata.oca.DefaultROCA;
 import net.automatalib.automata.oca.DefaultVCA;
 import net.automatalib.automata.oca.ROCA;
 import net.automatalib.automata.oca.State;
@@ -21,7 +21,10 @@ import net.automatalib.automata.oca.automatoncountervalues.DefaultAutomatonWithC
 import net.automatalib.automata.oca.automatoncountervalues.DefaultAutomatonWithCounterValuesState;
 import net.automatalib.commons.util.Pair;
 import net.automatalib.words.Alphabet;
+import net.automatalib.words.VPDAlphabet;
 import net.automatalib.words.Word;
+import net.automatalib.words.impl.Alphabets;
+import net.automatalib.words.impl.DefaultVPDAlphabet;
 
 /**
  * Utility class revolving around OCAs.
@@ -227,11 +230,11 @@ public class OCAUtil {
      * @param maxCounterValue The maximum counter value
      * @return A DFA where the states are annotated with counter values.
      */
-    public static <I> DefaultAutomatonWithCounterValues<I> constructRestrictedAutomaton(final DefaultROCA<I> roca,
+    public static <I> DefaultAutomatonWithCounterValues<I> constructRestrictedAutomaton(final ROCA<?, I> roca,
             int maxCounterValue) {
         // We construct a VCA from this ROCA
         // We naturally need to transform the alphabet I into Pair<I, Integer>
-        DefaultVCA<Pair<I, Integer>> vca = roca.toVCA();
+        DefaultVCA<Pair<I, Integer>> vca = toVCA(roca);
         // We construct the behavior graph of the VCA, up to a counter value
         DefaultAutomatonWithCounterValues<Pair<I, Integer>> bg_b = constructRestrictedAutomaton(vca, maxCounterValue);
 
@@ -273,5 +276,73 @@ public class OCAUtil {
         }
 
         return automaton;
+    }
+
+    /**
+     * Converts a {@link ROCA} into a {@link DefaultVCA}.
+     * 
+     * Using the input alphabet Sigma of the ROCA, the visibly pushdown alphabet of
+     * the VCA is constructed by Sigma x {-1, 0, +1}.
+     * 
+     * @param <L>  Location type
+     * @param <I>  Input alphabet type
+     * @param roca The ROCA to convert
+     * @return The VCA
+     */
+    public static <L, I> DefaultVCA<Pair<I, Integer>> toVCA(ROCA<L, I> roca) {
+        Alphabet<I> alphabet = roca.getAlphabet();
+
+        Alphabet<Pair<I, Integer>> internalAlphabet = Alphabets
+                .fromCollection(alphabet.stream().map(symbol -> Pair.of(symbol, 0)).collect(Collectors.toList()));
+        Alphabet<Pair<I, Integer>> callAlphabet = Alphabets
+                .fromCollection(alphabet.stream().map(symbol -> Pair.of(symbol, +1)).collect(Collectors.toList()));
+        Alphabet<Pair<I, Integer>> returnAlphabet = Alphabets
+                .fromCollection(alphabet.stream().map(symbol -> Pair.of(symbol, -1)).collect(Collectors.toList()));
+        VPDAlphabet<Pair<I, Integer>> vpdAlphabet = new DefaultVPDAlphabet<>(internalAlphabet, callAlphabet,
+                returnAlphabet);
+
+        DefaultVCA<Pair<I, Integer>> vca = new DefaultVCA<Pair<I, Integer>>(1, vpdAlphabet, roca.getAcceptanceMode());
+
+        Map<L, VCALocation> roca_to_vca_states = new HashMap<>();
+        for (L rocaLocation : roca.getLocations()) {
+            if (!roca_to_vca_states.containsKey(rocaLocation)) {
+                VCALocation vcaLocation;
+                if (rocaLocation.equals(roca.getInitialLocation())) {
+                    vcaLocation = vca.addInitialLocation(roca.isAcceptingLocation(rocaLocation));
+                } else {
+                    vcaLocation = vca.addLocation(roca.isAcceptingLocation(rocaLocation));
+                }
+                roca_to_vca_states.put(rocaLocation, vcaLocation);
+            }
+
+            for (int i = 0; i < roca.getNumberOfTransitionFunctions(); i++) {
+                State<L> rocaStart = new State<>(rocaLocation, i);
+                State<VCALocation> vcaStart = new State<>(roca_to_vca_states.get(rocaLocation), i);
+                for (I symbol : roca.getAlphabet()) {
+                    State<L> rocaTarget = roca.getSuccessor(rocaStart, symbol);
+
+                    if (rocaTarget == null) {
+                        continue;
+                    }
+
+                    if (!roca_to_vca_states.containsKey(rocaTarget.getLocation())) {
+                        VCALocation vcaLocation;
+                        if (rocaTarget.getLocation() == roca.getInitialLocation()) {
+                            vcaLocation = vca.addInitialLocation(roca.isAcceptingLocation(rocaTarget.getLocation()));
+                        } else {
+                            vcaLocation = vca.addLocation(roca.isAcceptingLocation(rocaTarget.getLocation()));
+                        }
+                        roca_to_vca_states.put(rocaTarget.getLocation(), vcaLocation);
+                    }
+
+                    VCALocation vcaTarget = roca_to_vca_states.get(rocaTarget.getLocation());
+                    int counterDifference = rocaTarget.getCounterValue() - rocaStart.getCounterValue();
+                    Pair<I, Integer> visiblySymbol = Pair.of(symbol, counterDifference);
+                    vca.setSuccessor(vcaStart, visiblySymbol, vcaTarget);
+                }
+            }
+        }
+
+        return vca;
     }
 }

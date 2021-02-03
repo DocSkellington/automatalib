@@ -44,7 +44,7 @@ public class ROCAToRestrictedAutomatonTest {
     @Test
     public void VCAToRestrictedAutomaton() {
         DefaultROCA<Character> roca = buildROCA();
-        DefaultVCA<Pair<Character, Integer>> vca = roca.toVCA();
+        DefaultVCA<Pair<Character, Integer>> vca = OCAUtil.toVCA(roca);
 
         DefaultAutomatonWithCounterValues<Pair<Character, Integer>> dfa = OCAUtil.constructRestrictedAutomaton(vca, 2);
 
