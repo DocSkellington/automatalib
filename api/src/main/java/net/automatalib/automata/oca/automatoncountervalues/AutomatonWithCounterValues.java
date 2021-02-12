@@ -4,13 +4,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+
+import com.google.common.collect.Iterables;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
 import net.automatalib.automata.UniversalDeterministicAutomaton;
+import net.automatalib.automata.UniversalFiniteAlphabetAutomaton;
 import net.automatalib.automata.concepts.DetSuffixOutputAutomaton;
+import net.automatalib.automata.oca.ROCA;
 import net.automatalib.words.Alphabet;
 
 /**
@@ -31,6 +36,7 @@ import net.automatalib.words.Alphabet;
  */
 public interface AutomatonWithCounterValues<S, I>
         extends UniversalDeterministicAutomaton<S, I, S, AcceptingOrExit, Void>,
+        UniversalFiniteAlphabetAutomaton<S, I, S, AcceptingOrExit, Void>,
         DetSuffixOutputAutomaton<S, I, S, AcceptingOrExit> {
 
     @Override
@@ -67,6 +73,12 @@ public interface AutomatonWithCounterValues<S, I>
         return null;
     }
 
+    @Override
+    default AcceptingOrExit computeSuffixOutput(Iterable<? extends I> prefix, Iterable<? extends I> suffix) {
+        Iterable<I> input = Iterables.concat(prefix, suffix);
+        return computeOutput(input);
+    }
+
     public boolean isAccepting(S state);
 
     public boolean isExit(S state);
@@ -74,6 +86,8 @@ public interface AutomatonWithCounterValues<S, I>
     public boolean isRejecting(S state);
 
     public int getCounterValue(S state);
+
+    public void setStateAcceptance(S state, AcceptingOrExit acceptance);
 
     public Alphabet<I> getInputAlphabet();
 
@@ -110,4 +124,34 @@ public interface AutomatonWithCounterValues<S, I>
     public default boolean accepts(Iterable<? extends I> input) {
         return computeOutput(input) == AcceptingOrExit.ACCEPTING;
     }
+
+    /**
+     * Gets the width of the automaton, defined as the maximal number of states
+     * grouped by counter values.
+     * 
+     * That is, if the width is three, then there are at most three states of
+     * counter value one, at most three of counter value one, and so on.
+     * 
+     * @return The width
+     */
+    public int getWidth();
+
+    /**
+     * Constructs a very simple {@link ROCA} by copying the automaton.
+     * 
+     * The built ROCA is just a copy of the automaton, as it uses only one
+     * transition function and never modifies the counter value. That is, it does
+     * not into account the knowledge about counter values.
+     * 
+     * @return An ROCA accepting the same language that the current automaton
+     */
+    public ROCA<?, I> asROCA();
+
+    /**
+     * Using the information about counter values, it constructs ROCAs matching
+     * these counter values.
+     * 
+     * @return A list of ROCAs
+     */
+    public List<ROCA<?, I>> toROCAs(int counterLimit);
 }
