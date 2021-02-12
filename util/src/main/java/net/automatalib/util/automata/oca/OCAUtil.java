@@ -15,6 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import net.automatalib.automata.oca.DefaultVCA;
 import net.automatalib.automata.oca.ROCA;
 import net.automatalib.automata.oca.State;
+import net.automatalib.automata.oca.VCA;
 import net.automatalib.automata.oca.VCALocation;
 import net.automatalib.automata.oca.automatoncountervalues.AcceptingOrExit;
 import net.automatalib.automata.oca.automatoncountervalues.DefaultAutomatonWithCounterValues;
@@ -172,14 +173,14 @@ public class OCAUtil {
      * @param maxCounterValue The maximal counter value.
      * @return An automaton with counter values.
      */
-    public static <I> DefaultAutomatonWithCounterValues<I> constructRestrictedAutomaton(final DefaultVCA<I> vca,
+    public static <L, I> DefaultAutomatonWithCounterValues<I> constructRestrictedAutomaton(final VCA<L, I> vca,
             int maxCounterValue) {
         DefaultAutomatonWithCounterValues<I> dfa = new DefaultAutomatonWithCounterValues<>(vca.getAlphabet());
-        Map<State<VCALocation>, DefaultAutomatonWithCounterValuesState> to_dfa_state = new HashMap<>();
-        Queue<State<VCALocation>> queue = new LinkedList<>();
+        Map<State<L>, DefaultAutomatonWithCounterValuesState> to_dfa_state = new HashMap<>();
+        Queue<State<L>> queue = new LinkedList<>();
         queue.add(new State<>(vca.getInitialLocation(), 0));
 
-        State<VCALocation> initialState = new State<>(vca.getInitialLocation(), 0);
+        State<L> initialState = new State<>(vca.getInitialLocation(), 0);
         DefaultAutomatonWithCounterValuesState newState = dfa.addInitialState(
                 vca.isAccepting(initialState) ? AcceptingOrExit.ACCEPTING : AcceptingOrExit.REJECTING, 0);
         to_dfa_state.put(initialState, newState);
@@ -187,13 +188,13 @@ public class OCAUtil {
         // TODO: construct the behavior graph, not the configuration graph
 
         while (queue.size() != 0) {
-            State<VCALocation> start = queue.poll();
+            State<L> start = queue.poll();
 
             for (I a : vca.getAlphabet()) {
-                State<VCALocation> target = vca.getTransition(start, a);
+                State<L> target = vca.getTransition(start, a);
                 if (target != null) {
                     if (!to_dfa_state.containsKey(target)) {
-                        VCALocation location = target.getLocation();
+                        L location = target.getLocation();
                         int counterValue = target.getCounterValue();
                         AcceptingOrExit acceptance;
                         if (counterValue > maxCounterValue) {
