@@ -1,7 +1,6 @@
 package net.automatalib.automata.oca;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -9,7 +8,6 @@ import java.util.Map;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.automatalib.graphs.Graph;
 import net.automatalib.visualization.DefaultVisualizationHelper;
 import net.automatalib.visualization.VisualizationHelper;
 import net.automatalib.words.Alphabet;
@@ -22,7 +20,7 @@ import net.automatalib.words.Alphabet;
  * 
  * @author Gaëtan Staquet
  */
-public abstract class AbstractOCA<L, I> implements OCA<L, I>, Graph<L, AbstractOCA.OCAViewEdge<L, I>>  {
+public abstract class AbstractOCA<L, I> implements OCA<L, I> {
     protected final AcceptanceMode acceptanceMode;
 
     protected final Alphabet<I> alphabet;
@@ -96,7 +94,7 @@ public abstract class AbstractOCA<L, I> implements OCA<L, I>, Graph<L, AbstractO
         final List<OCAViewEdge<L, I>> edges = new ArrayList<>();
 
         for (final I a : getAlphabet()) {
-            for (int i = 0 ; i < getNumberOfTransitionFunctions() ; i++) {
+            for (int i = 0; i < getNumberOfTransitionFunctions(); i++) {
                 State<L> state = new State<>(location, i);
                 Set<State<L>> targets = getSuccessors(state, a);
                 for (State<L> target : targets) {
@@ -127,7 +125,8 @@ public abstract class AbstractOCA<L, I> implements OCA<L, I>, Graph<L, AbstractO
             public boolean getNodeProperties(L node, Map<String, String> properties) {
                 super.getNodeProperties(node, properties);
 
-                properties.put(NodeAttrs.SHAPE, isAcceptingLocation(node) ? NodeShapes.DOUBLECIRCLE : NodeShapes.CIRCLE);
+                properties.put(NodeAttrs.SHAPE,
+                        isAcceptingLocation(node) ? NodeShapes.DOUBLECIRCLE : NodeShapes.CIRCLE);
                 properties.put(NodeAttrs.LABEL, "L" + getLocationId(node));
 
                 return true;
@@ -142,39 +141,22 @@ public abstract class AbstractOCA<L, I> implements OCA<L, I>, Graph<L, AbstractO
                 String guard;
                 if (counterValue >= getNumberOfTransitionFunctions() - 1) {
                     guard = ">=" + (getNumberOfTransitionFunctions() - 1);
-                }
-                else {
+                } else {
                     guard = "=" + counterValue;
                 }
                 properties.put(EdgeAttrs.LABEL, input + ", " + guard + ", " + counterOperation);
 
                 if (counterValue == 0) {
                     properties.put(EdgeAttrs.COLOR, "blue");
-                }
-                else if (counterValue == 1) {
+                } else if (counterValue == 1) {
                     properties.put(EdgeAttrs.COLOR, "green");
-                }
-                else if (counterValue == 2) {
+                } else if (counterValue == 2) {
                     properties.put(EdgeAttrs.COLOR, "red");
                 }
 
                 return true;
             }
         };
-    }
-
-    static class OCAViewEdge<S, I> {
-        final I input;
-        final int counterValue;
-        final int counterOperation;
-        final S target;
-
-        OCAViewEdge(I input, int counterValue, int counterOperation, S target) {
-            this.input = input;
-            this.counterValue = counterValue;
-            this.counterOperation = counterOperation;
-            this.target = target;
-        }
     }
 
     @Override

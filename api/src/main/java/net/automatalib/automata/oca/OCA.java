@@ -10,6 +10,7 @@ import java.util.stream.Collectors;
 import com.google.common.collect.Iterables;
 
 import net.automatalib.automata.concepts.SuffixOutput;
+import net.automatalib.graphs.Graph;
 import net.automatalib.ts.acceptors.AcceptorTS;
 import net.automatalib.words.Alphabet;
 
@@ -46,7 +47,7 @@ import net.automatalib.words.Alphabet;
  * 
  * @author Gaëtan Staquet
  */
-public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Boolean> {
+public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Boolean>, Graph<L, OCA.OCAViewEdge<L, I>> {
     /**
      * Returns the location with the given ID
      * 
@@ -260,4 +261,18 @@ public interface OCA<L, I> extends AcceptorTS<State<L>, I>, SuffixOutput<I, Bool
     public List<L> getLocations();
 
     public Alphabet<I> getAlphabet();
+
+    static class OCAViewEdge<S, I> {
+        final I input;
+        final int counterValue;
+        final int counterOperation;
+        final S target;
+
+        OCAViewEdge(I input, int counterValue, int counterOperation, S target) {
+            this.input = input;
+            this.counterValue = counterValue;
+            this.counterOperation = counterOperation;
+            this.target = target;
+        }
+    }
 }
