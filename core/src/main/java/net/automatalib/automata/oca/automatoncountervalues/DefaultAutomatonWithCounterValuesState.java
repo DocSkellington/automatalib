@@ -16,8 +16,9 @@ public final class DefaultAutomatonWithCounterValuesState
     private AcceptingOrExit acceptance;
     private int counterValue;
 
-    public DefaultAutomatonWithCounterValuesState(int initialNumOfInputs, AcceptingOrExit accepting, int counterValue) {
+    public DefaultAutomatonWithCounterValuesState(int initialNumOfInputs, int id, AcceptingOrExit accepting, int counterValue) {
         super(initialNumOfInputs);
+        setId(id);
         this.setAcceptance(accepting);
         this.setCounterValue(counterValue);
     }

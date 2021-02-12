@@ -1,9 +1,7 @@
 package net.automatalib.automata.oca.automatoncountervalues;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.List;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
@@ -17,25 +15,13 @@ import net.automatalib.words.Alphabet;
 public class DefaultAutomatonWithCounterValues<I>
         extends AbstractAutomatonWithCounterValues<DefaultAutomatonWithCounterValuesState, I> {
 
-    final List<DefaultAutomatonWithCounterValuesState> states;
-    DefaultAutomatonWithCounterValuesState initialState;
-
     public DefaultAutomatonWithCounterValues(Alphabet<I> alphabet) {
         super(alphabet);
-        this.states = new ArrayList<>();
     }
 
-    public DefaultAutomatonWithCounterValuesState addState(AcceptingOrExit accepting, int counterValue) {
-        DefaultAutomatonWithCounterValuesState state = new DefaultAutomatonWithCounterValuesState(alphabet.size(),
-                accepting, counterValue);
-        states.add(state);
-        return state;
-    }
-
-    public DefaultAutomatonWithCounterValuesState addInitialState(AcceptingOrExit accepting, int counterValue) {
-        DefaultAutomatonWithCounterValuesState state = addState(accepting, counterValue);
-        initialState = state;
-        return state;
+    @Override
+    protected DefaultAutomatonWithCounterValuesState createState(AcceptingOrExit accepting, int counterValue) {
+        return new DefaultAutomatonWithCounterValuesState(alphabet.size(), states.size(), accepting, counterValue);
     }
 
     public void setSuccessor(DefaultAutomatonWithCounterValuesState start, I input,
@@ -90,13 +76,34 @@ public class DefaultAutomatonWithCounterValues<I>
     }
 
     @Override
+    public @Nullable DefaultAutomatonWithCounterValuesState getSuccessor(DefaultAutomatonWithCounterValuesState state,
+            I input) {
+        // If we are already in an exit point, we stay in the exit point
+        if (state.isExit()) {
+            return state;
+        } else {
+            return super.getSuccessor(state, input);
+        }
+    }
+
+    @Override
     public AcceptingOrExit computeStateOutput(DefaultAutomatonWithCounterValuesState state,
             Iterable<? extends I> input) {
+        // If we are already in an exit point, we stay in the exit point
+        if (state.isExit()) {
+            return AcceptingOrExit.EXIT;
+        }
+
         DefaultAutomatonWithCounterValuesState target = getSuccessor(state, input);
         if (target != null) {
             return target.getAcceptance();
         } else {
             return AcceptingOrExit.REJECTING;
         }
+    }
+
+    @Override
+    public void setStateAcceptance(DefaultAutomatonWithCounterValuesState state, AcceptingOrExit acceptance) {
+        state.setAcceptance(acceptance);
     }
 }

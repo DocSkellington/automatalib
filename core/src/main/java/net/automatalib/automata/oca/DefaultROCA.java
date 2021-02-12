@@ -2,16 +2,9 @@ package net.automatalib.automata.oca;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Collectors;
 
-import net.automatalib.commons.util.Pair;
 import net.automatalib.ts.simple.SimpleDTS;
 import net.automatalib.words.Alphabet;
-import net.automatalib.words.VPDAlphabet;
-import net.automatalib.words.impl.Alphabets;
-import net.automatalib.words.impl.DefaultVPDAlphabet;
 
 /**
  * Default implementation for ROCAs with two transitions functions, and without
