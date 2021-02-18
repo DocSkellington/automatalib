@@ -8,6 +8,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import net.automatalib.automata.fsa.DFA;
+import net.automatalib.automata.fsa.impl.compact.CompactDFA;
 import net.automatalib.automata.oca.DefaultROCA;
 import net.automatalib.automata.oca.ROCA;
 import net.automatalib.automata.oca.ROCALocation;
@@ -307,5 +309,35 @@ public abstract class AbstractAutomatonWithCounterValues<S, I> implements Automa
         }
 
         return true;
+    }
+
+    @Override
+    public DFA<?, I> toSimpleDFA() {
+        CompactDFA<I> dfa = new CompactDFA<>(alphabet);
+
+        Map<S, Integer> stateToDFA = new HashMap<>();
+        for (S state : getStates()) {
+            boolean accepting = isAccepting(state);
+            boolean initial = (state == initialState);
+            Integer newState;
+            if (initial) {
+                newState = dfa.addInitialState(accepting);
+            }
+            else {
+                newState = dfa.addState(accepting);
+            }
+            stateToDFA.put(state, newState);
+        }
+
+        for (S state : getStates()) {
+            Integer start = stateToDFA.get(state);
+
+            for (I input : alphabet) {
+                Integer target = stateToDFA.get(getTransition(state, input));
+                dfa.setTransition(start, input, target);
+            }
+        }
+
+        return dfa;
     }
 }

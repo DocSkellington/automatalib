@@ -15,6 +15,7 @@ import org.checkerframework.checker.nullness.qual.Nullable;
 import net.automatalib.automata.UniversalDeterministicAutomaton;
 import net.automatalib.automata.UniversalFiniteAlphabetAutomaton;
 import net.automatalib.automata.concepts.DetSuffixOutputAutomaton;
+import net.automatalib.automata.fsa.DFA;
 import net.automatalib.automata.oca.ROCA;
 import net.automatalib.words.Alphabet;
 
@@ -154,4 +155,10 @@ public interface AutomatonWithCounterValues<S, I>
      * @return A list of ROCAs
      */
     public List<ROCA<?, I>> toROCAs(int counterLimit);
+
+    /**
+     * Strips the counter values information to obtain a simple DFA.
+     * @return The same automaton but without the counter values.
+     */
+    public DFA<?, I> toSimpleDFA();
 }
