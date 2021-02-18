@@ -46,7 +46,15 @@ public final class State<L> {
         }
         final State<?> o = (State<?>)obj;
         if (counterValue == o.counterValue) {
-            return (o.loc == null && this.loc == null) || (o.loc.equals(loc));
+            if ((o.loc == null) != (this.loc == null)) {
+                return false;
+            }
+            if (o.loc == null) { // So, both are null
+                return true;
+            }
+            else { // So, both are not null
+                return this.loc.equals(o.loc);
+            }
         }
         return false;
     }
