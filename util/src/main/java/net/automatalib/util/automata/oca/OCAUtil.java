@@ -12,8 +12,11 @@ import java.util.stream.Collectors;
 
 import org.checkerframework.checker.nullness.qual.Nullable;
 
+import net.automatalib.automata.fsa.DFA;
+import net.automatalib.automata.oca.DefaultROCA;
 import net.automatalib.automata.oca.DefaultVCA;
 import net.automatalib.automata.oca.ROCA;
+import net.automatalib.automata.oca.ROCALocation;
 import net.automatalib.automata.oca.State;
 import net.automatalib.automata.oca.VCA;
 import net.automatalib.automata.oca.VCALocation;
@@ -345,5 +348,45 @@ public class OCAUtil {
         }
 
         return vca;
+    }
+
+    /**
+     * Construct an ROCA from a DFA.
+     * @param <S> The state type of the DFA
+     * @param <I> The input alphabet type
+     * @param dfa The DFA
+     * @param alphabet The alphabet
+     * @return An ROCA accepting the same language than the DFA.
+     */
+    public static <S, I> ROCA<?, I> constructROCAFromDFA(DFA<S, I> dfa, Alphabet<I> alphabet) {
+        DefaultROCA<I> roca = new DefaultROCA<>(alphabet);
+
+        HashMap<S, ROCALocation> dfaToRoca = new HashMap<>();
+
+        for (S state : dfa.getStates()) {
+            boolean accepting = dfa.isAccepting(state);
+            boolean initial = dfa.getInitialState().equals(state);
+            ROCALocation location;
+            if (initial) {
+                location = roca.addInitialLocation(accepting);
+            }
+            else {
+                location = roca.addLocation(accepting);
+            }
+            dfaToRoca.put(state, location);
+        }
+
+        for (S state : dfa.getStates()) {
+            ROCALocation start = dfaToRoca.get(state);
+            for (I input : alphabet) {
+                S targetDFA = dfa.getSuccessor(state, input);
+                if (targetDFA != null) {
+                    ROCALocation target = dfaToRoca.get(targetDFA);
+                    roca.setSuccessor(start, 0, input, 0, target);
+                }
+            }
+        }
+
+        return roca;
     }
 }
