@@ -158,6 +158,9 @@ public interface AutomatonWithCounterValues<S, I>
 
     /**
      * Strips the counter values information to obtain a simple DFA.
+     * 
+     * The DFA is not guaranteed to be complete, nor minimal.
+     * 
      * @return The same automaton but without the counter values.
      */
     public DFA<?, I> toSimpleDFA();

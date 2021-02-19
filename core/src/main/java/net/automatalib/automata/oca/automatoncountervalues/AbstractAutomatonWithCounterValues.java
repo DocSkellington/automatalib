@@ -1,6 +1,7 @@
 package net.automatalib.automata.oca.automatoncountervalues;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -178,7 +179,9 @@ public abstract class AbstractAutomatonWithCounterValues<S, I> implements Automa
     protected boolean areIsomorphic(int offset, int period) {
         int first = offset;
         int second = offset + period;
-        if (statesByCounterValue.get(first).size() != statesByCounterValue.get(second).size()) {
+        List<S> statesForFirst = statesByCounterValue.getOrDefault(first, Collections.emptyList());
+        List<S> statesForSecond = statesByCounterValue.getOrDefault(second, Collections.emptyList());
+        if (statesForFirst.size() != statesForSecond.size()) {
             return false;
         }
 
@@ -187,15 +190,15 @@ public abstract class AbstractAutomatonWithCounterValues<S, I> implements Automa
             traversalNumbers.put(i, new HashMap<>());
         }
 
-        for (int i = 0; i < statesByCounterValue.get(first).size(); i++) {
-            S stateFirst = statesByCounterValue.get(first).get(i);
+        for (int i = 0; i < statesForFirst.size(); i++) {
+            S stateFirst = statesForFirst.get(i);
             if (traversalNumbers.get(first).containsKey(stateFirst)) {
                 continue;
             }
 
             boolean isomorphismFound = false;
-            for (int j = 0; j < statesByCounterValue.get(second).size(); j++) {
-                S stateSecond = statesByCounterValue.get(second).get(j);
+            for (int j = 0; j < statesForSecond.size(); j++) {
+                S stateSecond = statesForSecond.get(j);
                 if (traversalNumbers.get(second).containsKey(stateSecond)) {
                     continue;
                 }
