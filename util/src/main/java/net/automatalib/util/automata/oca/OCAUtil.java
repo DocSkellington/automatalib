@@ -140,8 +140,8 @@ public class OCAUtil {
                     return newWord;
                 }
 
-                if (target1 == null || target2 == null || target1.getCounterValue() <= maxCounterValue
-                        || target2.getCounterValue() <= maxCounterValue) {
+                if (target1 == null || target2 == null || (target1.getCounterValue() <= maxCounterValue
+                        && target2.getCounterValue() <= maxCounterValue)) {
                     InQueue next = new InQueue(newWord, target1, target2);
                     if (!toExplore.contains(next) && !explored.contains(next)) {
                         toExplore.add(next);
@@ -352,9 +352,10 @@ public class OCAUtil {
 
     /**
      * Construct an ROCA from a DFA.
-     * @param <S> The state type of the DFA
-     * @param <I> The input alphabet type
-     * @param dfa The DFA
+     * 
+     * @param <S>      The state type of the DFA
+     * @param <I>      The input alphabet type
+     * @param dfa      The DFA
      * @param alphabet The alphabet
      * @return An ROCA accepting the same language than the DFA.
      */
@@ -369,8 +370,7 @@ public class OCAUtil {
             ROCALocation location;
             if (initial) {
                 location = roca.addInitialLocation(accepting);
-            }
-            else {
+            } else {
                 location = roca.addLocation(accepting);
             }
             dfaToRoca.put(state, location);

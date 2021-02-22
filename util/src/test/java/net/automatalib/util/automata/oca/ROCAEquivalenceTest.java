@@ -23,7 +23,7 @@ public class ROCAEquivalenceTest {
         Assert.assertTrue(OCAUtil.testEquivalence(roca, roca, alphabet));
     }
 
-    @Test
+    @Test(timeOut = 1000)
     public void testEquivalenceWithSelf() {
         Alphabet<Character> alphabet = Alphabets.characters('a', 'b');
         DefaultROCA<Character> roca = new DefaultROCA<>(alphabet);
@@ -42,7 +42,7 @@ public class ROCAEquivalenceTest {
         Assert.assertNull(OCAUtil.findSeparatingWord(roca, roca, alphabet));
     }
 
-    @Test
+    @Test(timeOut = 1000)
     public void testEquivalenceSameLanguage() {
         // The language of both ROCAs is {a^n b a^m | 0 < n <= m}
         Alphabet<Character> alphabet = Alphabets.characters('a', 'b');
@@ -107,7 +107,7 @@ public class ROCAEquivalenceTest {
         Assert.assertTrue(OCAUtil.testEquivalence(roca1, roca2, alphabet));
     }
 
-    @Test
+    @Test(timeOut = 1000)
     public void testEquivalenceEmptyAndFull() {
         // L_1 = {a^n | n >= 0}
         // L_2 = {}
@@ -128,7 +128,7 @@ public class ROCAEquivalenceTest {
         Assert.assertFalse(OCAUtil.testEquivalence(roca1, roca2, alphabet));
     }
 
-    @Test
+    @Test(timeOut = 1000)
     public void testNonEquivalence() {
         // L_1 = {a^n b^{n+1} a | n > 0}
         // L_2 = {a^n b^{n+1} | n > 0}
@@ -159,5 +159,93 @@ public class ROCAEquivalenceTest {
 
         Assert.assertNotNull(OCAUtil.findSeparatingWord(roca1, roca2, alphabet));
         Assert.assertFalse(OCAUtil.testEquivalence(roca1, roca2, alphabet));
+    }
+
+    @Test(timeOut = 1000)
+    public void testCompleteAndNonComplete() {
+        Alphabet<Character> alphabet = Alphabets.characters('a', 'b');
+        DefaultROCA<Character> complete = new DefaultROCA<>(alphabet);
+
+        ROCALocation q0_1 = complete.addInitialLocation(false);
+        ROCALocation q1_1 = complete.addLocation(true);
+        ROCALocation q2_1 = complete.addLocation(false);
+
+        complete.setSuccessor(q0_1, 0, 'a', +1, q0_1);
+        complete.setSuccessor(q0_1, 0, 'b', 0, q2_1);
+        complete.setSuccessor(q0_1, 1, 'a', +1, q0_1);
+        complete.setSuccessor(q0_1, 1, 'b', -1, q1_1);
+
+        complete.setSuccessor(q1_1, 0, 'a', 0, q2_1);
+        complete.setSuccessor(q1_1, 0, 'b', 0, q1_1);
+        complete.setSuccessor(q1_1, 1, 'a', 0, q2_1);
+        complete.setSuccessor(q1_1, 1, 'b', -1, q1_1);
+
+        complete.setSuccessor(q2_1, 0, 'a', 0, q2_1);
+        complete.setSuccessor(q2_1, 0, 'b', 0, q2_1);
+        complete.setSuccessor(q2_1, 1, 'a', 0, q2_1);
+        complete.setSuccessor(q2_1, 1, 'b', 0, q2_1);
+
+        DefaultROCA<Character> nonComplete = new DefaultROCA<>(alphabet);
+
+        ROCALocation q0_2 = nonComplete.addInitialLocation(false);
+        ROCALocation q1_2 = nonComplete.addLocation(true);
+
+        nonComplete.setSuccessor(q0_2, 0, 'a', +1, q0_2);
+        nonComplete.setSuccessor(q0_2, 1, 'a', +1, q0_2);
+        nonComplete.setSuccessor(q0_2, 1, 'b', -1, q1_2);
+
+        nonComplete.setSuccessor(q1_2, 0, 'b', 0, q1_2);
+        nonComplete.setSuccessor(q1_2, 1, 'b', -1, q1_2);
+
+        Assert.assertNull(OCAUtil.findSeparatingWord(complete, nonComplete, alphabet));
+        Assert.assertTrue(OCAUtil.testEquivalence(complete, nonComplete, alphabet));
+
+        DefaultROCA<Character> nonEquivalent = new DefaultROCA<>(alphabet);
+
+        ROCALocation q0_3 = nonEquivalent.addInitialLocation(false);
+        ROCALocation q1_3 = nonEquivalent.addLocation(true);
+
+        nonEquivalent.setSuccessor(q0_3, 0, 'a', +1, q0_3);
+        nonEquivalent.setSuccessor(q0_3, 1, 'a', +1, q0_3);
+        nonEquivalent.setSuccessor(q0_3, 1, 'b', 0, q1_3);
+
+        nonEquivalent.setSuccessor(q1_3, 0, 'b', 0, q1_3);
+        nonEquivalent.setSuccessor(q1_3, 1, 'b', -1, q1_3);
+
+        Assert.assertNotNull(OCAUtil.findSeparatingWord(complete, nonEquivalent, alphabet));
+        Assert.assertNotNull(OCAUtil.findSeparatingWord(nonComplete, nonEquivalent, alphabet));
+        Assert.assertFalse(OCAUtil.testEquivalence(complete, nonEquivalent, alphabet));
+        Assert.assertFalse(OCAUtil.testEquivalence(nonComplete, nonEquivalent, alphabet));
+    }
+
+    @Test(timeOut = 1000)
+    public void testOneFunctionAndTwoFunctions() {
+        // Both automata accept L = {epsilon}.
+        // The second automata increments its counter value, while the first never changes it.
+        Alphabet<Character> alphabet = Alphabets.characters('a', 'b');
+        DefaultROCA<Character> oneFunction = new DefaultROCA<>(alphabet);
+
+        ROCALocation q0_1 = oneFunction.addInitialLocation(true);
+        ROCALocation q1_1 = oneFunction.addLocation(false);
+
+        oneFunction.setSuccessor(q0_1, 0, 'a', 0, q1_1);
+        oneFunction.setSuccessor(q0_1, 0, 'b', 0, q1_1);
+
+        oneFunction.setSuccessor(q1_1, 0, 'a', 0, q1_1);
+        oneFunction.setSuccessor(q1_1, 0, 'b', 0, q1_1);
+
+        DefaultROCA<Character> twoFunctions = new DefaultROCA<>(alphabet);
+
+        ROCALocation q0_2 = twoFunctions.addInitialLocation(true);
+        ROCALocation q1_2 = twoFunctions.addLocation(false);
+
+        twoFunctions.setSuccessor(q0_2, 0, 'a', +1, q0_2);
+        twoFunctions.setSuccessor(q0_2, 1, 'a', +1, q0_2);
+        twoFunctions.setSuccessor(q0_2, 1, 'b', -1, q1_2);
+
+        twoFunctions.setSuccessor(q1_2, 1, 'b', -1, q1_2);
+
+        Assert.assertNull(OCAUtil.findSeparatingWord(oneFunction, twoFunctions, alphabet));
+        Assert.assertTrue(OCAUtil.testEquivalence(oneFunction, twoFunctions, alphabet));
     }
 }
